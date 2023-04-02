@@ -10,7 +10,8 @@ class Miscellaneous(commands.Cog):
         self.bot = bot
 
     ### PING ###
-    @commands.hybrid_command(description="Get the latency between your client and Discord!")
+    @commands.hybrid_command(description="Get the latency between your client and Discord!",
+                             aliases=["latency"])
     async def ping(self, ctx):
         # Retrieves the server latency in milliseconds
         embedVar = discord.Embed(title="Pong!",
@@ -27,7 +28,8 @@ class Miscellaneous(commands.Cog):
         await sendDefaultError(ctx)
     
     ### AVATAR ###
-    @commands.hybrid_command(description="Get the avatar of any user!")
+    @commands.hybrid_command(description="Get the avatar of any user!",
+                             aliases=["pfp, picture"])
     async def avatar(self, ctx, member:discord.Member=None):
         if (member == None):
             await ctx.send(ctx.author.display_avatar)
@@ -46,7 +48,7 @@ class Miscellaneous(commands.Cog):
 
     ### COINFLIP ###
     @commands.hybrid_command(description="Flip a coin!",
-                             aliases=["flip", "coin"])
+                             aliases=["flipcoin", "coin"])
     async def coinflip(self, ctx):
         # Calls a random float between 0 and 0.99 inclusive. Returns heads if 0 - 0.48 and tails if 0.49 - 0.99
         result = "Heads!" if random.randint(0, 1) == 0 else "Tails!"
@@ -60,7 +62,8 @@ class Miscellaneous(commands.Cog):
         await sendDefaultError(ctx)
 
     ### REPO ###
-    @commands.hybrid_command(description="Check out my GitHub repository!")
+    @commands.hybrid_command(description="Check out my GitHub repository!"
+                             aliases=["repository"])
     async def repo(self, ctx):
         embedVar = discord.Embed(title=f"Click here to visit the {ctx.guild.get_member(980203562485317652).name} repository!",
                                  url='https://github.com/SameriteRL/RayBot-2',
