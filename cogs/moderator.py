@@ -1,8 +1,8 @@
-import datetime as dt
-from datetime import timezone
 import discord
 from discord.ext import commands
 from globals import *
+import datetime as dt
+from datetime import timezone
 
 class Moderator(commands.Cog):
 

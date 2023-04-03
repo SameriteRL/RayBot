@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 from globals import *
+import datetime as dt
 import random
-import datetime
 
 class Miscellaneous(commands.Cog):
 
@@ -17,7 +17,7 @@ class Miscellaneous(commands.Cog):
         embedVar = discord.Embed(title="Pong!",
                                  description=f"Your message was recieved in {round(self.bot.latency * 1000)}ms.",
                                  color=0x00C500,
-                                 timestamp=datetime.datetime.now())
+                                 timestamp=dt.datetime.now())
         if ctx.author.nick != None: invoker_name = ctx.author.nick
         else: invoker_name = ctx.author.name
         embedVar.set_footer(text=f"\u200bPing checked by {invoker_name}")
