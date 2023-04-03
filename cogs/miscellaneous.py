@@ -62,7 +62,7 @@ class Miscellaneous(commands.Cog):
         await sendDefaultError(ctx)
 
     ### REPO ###
-    @commands.hybrid_command(description="Check out my GitHub repository!"
+    @commands.hybrid_command(description="Check out my GitHub repository!",
                              aliases=["repository"])
     async def repo(self, ctx):
         embedVar = discord.Embed(title=f"Click here to visit the {ctx.guild.get_member(980203562485317652).name} repository!",
