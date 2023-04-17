@@ -1,7 +1,7 @@
 import discord
 
 # Prefix for all bot commands
-COMMAND_PREFIX = "?"
+CMD_PREFIX = "?"
 
 # For use in commands that check for owner status
 OWNER_IDS = \

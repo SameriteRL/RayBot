@@ -13,18 +13,22 @@ async def displayAnswer(ctx:commands.Context, answer:Decimal, equation:str, colo
     else:
         display_answer = "{:,}".format(answer)
     # Creates and sends a response embed
-    embedVar = discord.Embed(title=display_answer,
-                                description=equation,
-                                color=color)
+    embedVar = discord.Embed(
+        title=display_answer,
+        description=equation,
+        color=color
+    )
     await ctx.send(embed=embedVar)
 
 # Error handler for functions that only fault if less than two arguments are provided
 async def requireTwoArgumentsError(ctx:commands.Context, error:commands.errors, color:int=0xC80000):
     # If less than two arguments are passed in
     if isinstance(error, commands.BadArgument):
-        embedVar = discord.Embed(title=ERROR_TITLE,
-                                 description="Enter at least two numbers, each separated by a space.",
-                                 color=color)
+        embedVar = discord.Embed(
+            title=ERROR_TITLE,
+            description="Enter at least two numbers, each separated by a space.",
+            color=color
+        )
         await ctx.send(embed=embedVar)
     # Sends the default error defined in globals.py
     else:
@@ -192,17 +196,21 @@ class Calculator(commands.Cog):
             else:
                 display_roots += format_template.format(roots[i])
         # Creates and sends a response embed
-        embedVar = discord.Embed(title=display_roots,
-                                    description=inputs,
-                                    color=0x00C500)
+        embedVar = discord.Embed(
+            title=display_roots,
+            description=inputs,
+            color=0x00C500
+        )
         await ctx.send(embed=embedVar)
 
     @sqrt.error
     async def sqrt_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            embedVar = discord.Embed(title=ERROR_TITLE,
-                                    description="Enter at least one number, each separated by a space.",
-                                    color=0xC80000)
+            embedVar = discord.Embed(
+                title=ERROR_TITLE,
+                description="Enter at least one number, each separated by a space.",
+                color=0xC80000
+            )
             await ctx.send(embed=embedVar)
         else:
             await sendDefaultError(ctx)
@@ -232,17 +240,21 @@ class Calculator(commands.Cog):
             else:
                 display_inverses += format_template.format(inverses[i])
         # Creates and sends a response embed
-        embedVar = discord.Embed(title=display_inverses,
-                                    description=inputs,
-                                    color=0x00C500)
+        embedVar = discord.Embed(
+            title=display_inverses,
+            description=inputs,
+            color=0x00C500
+        )
         await ctx.send(embed=embedVar)
     
     @inverse.error
     async def inverse_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            embedVar = discord.Embed(title=ERROR_TITLE,
-                                    description="Enter at least one number, each separated by a space.",
-                                    color=0xC80000)
+            embedVar = discord.Embed(
+                title=ERROR_TITLE,
+                description="Enter at least one number, each separated by a space.",
+                color=0xC80000
+            )
             await ctx.send(embed=embedVar)
         else:
             await sendDefaultError(ctx)
