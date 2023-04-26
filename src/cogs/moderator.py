@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 from globals import *
 import datetime as dt
-from datetime import timezone
 
 class Moderator(commands.Cog):
 
@@ -164,7 +163,7 @@ class Moderator(commands.Cog):
     @commands.check_any(commands.has_permissions(moderate_members=True), commands.is_owner())
     async def timein(self, ctx, member:discord.Member):
         if member.is_timed_out():
-            remaining_seconds = (member.timed_out_until - dt.datetime.now(timezone.utc)).seconds
+            remaining_seconds = (member.timed_out_until - dt.datetime.now(dt.timezone.utc)).seconds
             days, hours, minutes, seconds = 0, 0, 0, remaining_seconds
             # Organizes the total seconds into different time components
             if seconds >= 60:
