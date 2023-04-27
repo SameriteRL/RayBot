@@ -1,11 +1,14 @@
 import discord
 from discord.ext import commands
-from globals import *
-from decimal import Decimal
+from discord.ext.commands import Context, Bot
+
 import math
+from decimal import Decimal
+
+from src.globals import *
 
 # Handles output for most calculator functions
-async def displayAnswer(ctx:commands.Context, answer:Decimal, equation:str, color:int=0x00C500):
+async def displayAnswer(ctx:Context, answer:Decimal, equation:str, color:int=0x00C500):
     # Displays the answer without decimals if it's equal to it's integer value
     if answer == answer.to_integral_value(): 
         display_answer = "{:,}".format(int(answer))
@@ -13,36 +16,36 @@ async def displayAnswer(ctx:commands.Context, answer:Decimal, equation:str, colo
     else:
         display_answer = "{:,}".format(answer)
     # Creates and sends a response embed
-    embedVar = discord.Embed(
+    embed_var = discord.Embed(
         title=display_answer,
         description=equation,
         color=color
     )
-    await ctx.send(embed=embedVar)
+    await ctx.send(embed=embed_var)
 
 # Error handler for functions that only fault if less than two arguments are provided
-async def requireTwoArgumentsError(ctx:commands.Context, error:commands.errors, color:int=0xC80000):
+async def requireTwoArgumentsError(ctx:Context, error:commands.errors, color:int=0xC80000):
     # If less than two arguments are passed in
     if isinstance(error, commands.BadArgument):
-        embedVar = discord.Embed(
+        embed_var = discord.Embed(
             title=ERROR_TITLE,
             description="Enter at least two numbers, each separated by a space.",
             color=color
         )
-        await ctx.send(embed=embedVar)
+        await ctx.send(embed=embed_var)
     # Sends the default error defined in globals.py
     else:
         await sendDefaultError(ctx)
 
 class Calculator(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot:Bot):
         self.bot = bot
     
     ### ADD ###
     @commands.hybrid_command(description="Calculate the sum of any number of values.",
                              aliases=["sum", "plus"])
-    async def add(self, ctx, nums:commands.Greedy[Decimal]):
+    async def add(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least two arguments
         if len(nums) < 2: 
             raise commands.BadArgument
@@ -64,7 +67,7 @@ class Calculator(commands.Cog):
     ### SUBTRACT ###
     @commands.hybrid_command(description="Calculate the difference of any number of values, from left to right.",
                              aliases=["sub", "subt", "minus"])
-    async def subtract(self, ctx, nums:commands.Greedy[Decimal]):
+    async def subtract(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least two arguments
         if len(nums) < 2:
             raise commands.BadArgument
@@ -86,7 +89,7 @@ class Calculator(commands.Cog):
     ### MULTIPLY ###
     @commands.hybrid_command(description="Calculate the product of any number of values.",
                              aliases=["mul", "mult", "times"])
-    async def multiply(self, ctx, nums:commands.Greedy[Decimal]):
+    async def multiply(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least two arguments
         if len(nums) < 2:
             raise commands.BadArgument
@@ -108,7 +111,7 @@ class Calculator(commands.Cog):
     ### DIVIDE ###
     @commands.hybrid_command(description="Calculate the quotient of any number of values, from left to right.",
                              aliases=["div"])
-    async def divide(self, ctx, nums:commands.Greedy[Decimal]):
+    async def divide(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least two arguments
         if len(nums) < 2:
             raise commands.BadArgument
@@ -130,7 +133,7 @@ class Calculator(commands.Cog):
     ### POWER ###
     @commands.hybrid_command(description="Returns the exponential result of any number to the power of any number.",
                              aliases=["exp", "exponent"])
-    async def power(self, ctx, nums:commands.Greedy[Decimal]):
+    async def power(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least two arguments
         if len(nums) < 2:
             raise commands.BadArgument
@@ -152,7 +155,7 @@ class Calculator(commands.Cog):
     ### MODULUS ###
     @commands.hybrid_command(description="Calculate the remainder of any number of values, from left to right.",
                              aliases=["mod", "remainder"])
-    async def modulus(self, ctx, nums:commands.Greedy[Decimal]):
+    async def modulus(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least two inputs
         if len(nums) < 2:
             raise commands.BadArgument
@@ -174,7 +177,7 @@ class Calculator(commands.Cog):
     ### SQUARE ROOT ###
     @commands.hybrid_command(description="Calculate the square root of any number or group of numbers.",
                              aliases=["rad", "radical", "root", "squareroot", "square_root"])
-    async def sqrt(self, ctx, nums:commands.Greedy[Decimal]):
+    async def sqrt(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least one argument
         if len(nums) == 0:
             raise commands.BadArgument
@@ -196,29 +199,29 @@ class Calculator(commands.Cog):
             else:
                 display_roots += format_template.format(roots[i])
         # Creates and sends a response embed
-        embedVar = discord.Embed(
+        embed_var = discord.Embed(
             title=display_roots,
             description=inputs,
             color=0x00C500
         )
-        await ctx.send(embed=embedVar)
+        await ctx.send(embed=embed_var)
 
     @sqrt.error
-    async def sqrt_error(self, ctx, error):
+    async def sqrt_error(self, ctx:Context, error):
         if isinstance(error, commands.BadArgument):
-            embedVar = discord.Embed(
+            embed_var = discord.Embed(
                 title=ERROR_TITLE,
                 description="Enter at least one number, each separated by a space.",
                 color=0xC80000
             )
-            await ctx.send(embed=embedVar)
+            await ctx.send(embed=embed_var)
         else:
             await sendDefaultError(ctx)
     
     ### INVERSE ###
-    @commands.hybrid_command(description= "Calculates the inverse of any number or a group of numbers.",
+    @commands.hybrid_command(description="Calculates the inverse of any number or a group of numbers.",
                              aliases=["1/"])
-    async def inverse(self, ctx, nums:commands.Greedy[Decimal]):
+    async def inverse(self, ctx:Context, nums:commands.Greedy[Decimal]):
         # Checks for at least one argument
         if len(nums) == 0:
             raise commands.BadArgument 
@@ -240,22 +243,22 @@ class Calculator(commands.Cog):
             else:
                 display_inverses += format_template.format(inverses[i])
         # Creates and sends a response embed
-        embedVar = discord.Embed(
+        embed_var = discord.Embed(
             title=display_inverses,
             description=inputs,
             color=0x00C500
         )
-        await ctx.send(embed=embedVar)
+        await ctx.send(embed=embed_var)
     
     @inverse.error
-    async def inverse_error(self, ctx, error):
+    async def inverse_error(self, ctx:Context, error):
         if isinstance(error, commands.BadArgument):
-            embedVar = discord.Embed(
+            embed_var = discord.Embed(
                 title=ERROR_TITLE,
                 description="Enter at least one number, each separated by a space.",
                 color=0xC80000
             )
-            await ctx.send(embed=embedVar)
+            await ctx.send(embed=embed_var)
         else:
             await sendDefaultError(ctx)
 

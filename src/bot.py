@@ -1,8 +1,10 @@
-import os
-import sys
 import discord
 from discord.ext import commands
-from globals import *
+
+import os
+import sys
+
+from src.globals import *
 
 # Must take in a directory (folder), path cannot be a simple file
 async def load_cogs(path:str, bot:commands.Bot):

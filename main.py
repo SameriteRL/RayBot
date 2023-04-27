@@ -1,6 +1,6 @@
 import asyncio
 from src.bot import Bot
-from globals import *
+from src.globals import *
 
 async def main():
     bot = Bot(CMD_PREFIX, discord.Intents.all())

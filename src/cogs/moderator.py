@@ -1,17 +1,20 @@
 import discord
 from discord.ext import commands
-from globals import *
+from discord.ext.commands import Context, Bot
+
 import datetime as dt
+
+from src.globals import *
 
 class Moderator(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot:Bot):
         self.bot = bot
 
     ### SHUTDOWN ###
-    @commands.command(description="Turn the bot offline.", aliases=["kill"], hidden=True)
+    @commands.command(description="Turns the bot offline.", aliases=["kill"], hidden=True)
     @commands.check(commands.is_owner())
-    async def shutdown(self, ctx):
+    async def shutdown(self, ctx:Context):
         # Creates a response embed
         embed_var = discord.Embed(
             title="Shutting down...",
@@ -41,7 +44,7 @@ class Moderator(commands.Cog):
     @commands.command(description="Delete the last x number of messages in the channel.",
                       aliases=["purge"], hidden=True)
     @commands.check_any(commands.has_permissions(manage_messages=True), commands.is_owner())
-    async def clear(self, ctx, num:int):
+    async def clear(self, ctx:Context, num:int):
         # Creates a response embed and clears messages
         if num < 1:
             embed_title = "Enter a number greater than or equal to 1."
@@ -81,7 +84,7 @@ class Moderator(commands.Cog):
     @commands.hybrid_command(description="Time out a user for a specified amount of time.",
                              aliases=["mute", "silence"], hidden=True)
     @commands.check_any(commands.has_permissions(moderate_members=True), commands.is_owner())
-    async def timeout(self, ctx, member:discord.Member, *, time:str=""):
+    async def timeout(self, ctx:Context, member:discord.Member, *, time:str=""):
 
         # Guards against an empty argument
         if len(time) == 0:
@@ -160,7 +163,7 @@ class Moderator(commands.Cog):
     @commands.hybrid_command(description="Remove timeout from a user.",
                              aliases=["untimeout"], hidden=True)
     @commands.check_any(commands.has_permissions(moderate_members=True), commands.is_owner())
-    async def timein(self, ctx, member:discord.Member):
+    async def timein(self, ctx:Context, member:discord.Member):
         if member.is_timed_out():
             remaining_seconds = (member.timed_out_until - dt.datetime.now(dt.timezone.utc)).seconds
             days, hours, minutes, seconds = 0, 0, 0, remaining_seconds
