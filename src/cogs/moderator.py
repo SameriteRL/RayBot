@@ -90,10 +90,8 @@ class Moderator(commands.Cog):
         time = time.strip().split()
         days, hours, minutes, seconds = 0, 0, 0, 0
         for element in time:
-            try:
-                int(element[:-1])
-            except:
-                raise commands.BadArgument
+            try: int(element[:-1])
+            except: raise commands.BadArgument
             else:
                 if element.lower().endswith("d"): days += int(element[:-1])
                 elif element.lower().endswith("h"): hours += int(element[:-1])
@@ -121,9 +119,11 @@ class Moderator(commands.Cog):
             error_desc = "The maximum possible timeout duration is 28 days."
         # Outputs an error if either of the above conditions are true
         if error_desc != None:
-            embed_var = discord.Embed(title=ERROR_TITLE,
-                                      description=error_desc,
-                                      color=0xC80000)
+            embed_var = discord.Embed(
+                title=ERROR_TITLE,
+                description=error_desc,
+                color=0xC80000
+            )
             await ctx.send(embed=embed_var)
             return
         
@@ -146,7 +146,6 @@ class Moderator(commands.Cog):
         elif isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
             embed_desc = f"Usage: `{CMD_PREFIX}timeout <member> <days>d <hours>h <minutes>m <seconds>s`\n \
                            At least one time argument is required."
-
         if embed_desc != None:
             embed_var = discord.Embed(
                 title=ERROR_TITLE,
@@ -182,7 +181,10 @@ class Moderator(commands.Cog):
                 color=0x00FF00
             )
         else:
-            embed_var = discord.Embed(title=f"{member.name} is not timed out.", color=0x00FF00)
+            embed_var = discord.Embed(
+                title=f"{member.name} is not timed out.",
+                color=0x00FF00
+            )
         await ctx.send(embed=embed_var)
     
     @timein.error
