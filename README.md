@@ -1,11 +1,11 @@
-# RayBot 2
+# RayBot
 
-The second coming of RayBot, a highly experimental Discord bot aimed for general-purpose use.
+A highly experimental Discord bot aimed for general-purpose use.
 
-Version
--------
-Built for discord.py 2.0+
+## Dependencies
+**discord.py (2.0+)**
+> `pip install discord.py` \
+> [Documentation & Getting Started](https://discordpy.readthedocs.io/en/latest/index.html "Click here to redirect!")
 
-Collaborators
------
-Raymond Chen
+## Contributors
+**Raymond Chen** - SameriteRL#8629
