@@ -20,13 +20,8 @@ class Miscellaneous(commands.Cog):
         embed_var = discord.Embed(
             title="Pong!",
             description=f"Your message was recieved in {round(self.bot.latency * 1000)}ms.",
-            color=0x00C500,
-            timestamp=dt.datetime.now()
+            color=0x00C500
         )
-        # Determines the name displayed in the embed footer
-        if ctx.author.nick != None: invoker_name = ctx.author.nick
-        else: invoker_name = ctx.author.name
-        embed_var.set_footer(text=f"\u200bPing checked by {invoker_name}")
         # Sends the embed
         await ctx.send(embed=embed_var)
     
@@ -50,19 +45,47 @@ class Miscellaneous(commands.Cog):
     @coinflip.error
     async def coinflip_error(self, ctx, error):
         await sendDefaultError(ctx)
+
+    ### WHOIS ###
+    @commands.hybrid_command(description="Get the profile info of any user!",
+                             aliases=["info", "profile"])
+    async def whois(self, ctx:Context, member:discord.Member=None):
+        target_user = (await self.bot.fetch_user(member.id)) if member != None \
+                       else (await self.bot.fetch_user(ctx.author.id))
+        target_name = target_user.name
+        target_id = f"{target_user.name}#{target_user.discriminator}"
+        avatar_url = target_user.display_avatar.url
+        banner_url = target_user.banner.url if target_user.banner != None else None
+        target_color = target_user.accent_color
+        embed_var = discord.Embed(
+            title=target_name,
+            description=target_id,
+            color=target_color
+        )
+        embed_var.set_thumbnail(url=avatar_url)
+        if banner_url != None: embed_var.set_image(url=banner_url)
+        await ctx.send(embed=embed_var)
+    
+    @whois.error
+    async def whois_error(self, ctx, error):
+        if isinstance(error, commands.MemberNotFound):
+            embed_var = discord.Embed(
+                title=ERROR_TITLE,
+                description=BAD_MEMBER_MSG,
+                color=0xC80000
+            )
+            await ctx.send(embed=embed_var)
+        else:
+            await sendDefaultError(ctx)
     
     ### AVATAR ###
     @commands.hybrid_command(description="Get the avatar of any user!",
-                             aliases=["pfp, picture"])
+                             aliases=["pfp", "picture"])
     async def avatar(self, ctx:Context, member:discord.Member=None):
-        # Sends the command invoker's avatar if no member is specified
-        if (member == None):
-            avatar_url = ctx.author.display_avatar.url
-            target_color = (await self.bot.fetch_user(ctx.author.id)).accent_color
-        # Otherwise sends the specified member's avatar
-        else:
-            avatar_url = member.display_avatar.url
-            target_color = (await self.bot.fetch_user(member.id)).accent_color
+        target_user = (await self.bot.fetch_user(member.id)) if member != None \
+                       else (await self.bot.fetch_user(ctx.author.id))
+        avatar_url = target_user.display_avatar.url
+        target_color = target_user.accent_color
         embed_var = discord.Embed(
             color=target_color
         )
@@ -71,6 +94,32 @@ class Miscellaneous(commands.Cog):
     
     @avatar.error
     async def avatar_error(self, ctx, error):
+        if isinstance(error, commands.MemberNotFound):
+            embed_var = discord.Embed(
+                title=ERROR_TITLE,
+                description=BAD_MEMBER_MSG,
+                color=0xC80000
+            )
+            await ctx.send(embed=embed_var)
+        else:
+            await sendDefaultError(ctx)
+
+    ### BANNER ###
+    @commands.hybrid_command(description="Get the banner of any user!")
+    async def banner(self, ctx:Context, member:discord.Member=None):
+        target_user = (await self.bot.fetch_user(member.id)) if member != None \
+                       else (await self.bot.fetch_user(ctx.author.id))
+        banner_url = target_user.banner.url if target_user.banner != None else None
+        target_color = target_user.accent_color
+        embed_var = discord.Embed(
+            title="This user doesn't have a banner set!" if banner_url == None else None,
+            color=target_color
+        )
+        if banner_url != None: embed_var.set_image(url=banner_url)
+        await ctx.send(embed=embed_var)
+    
+    @banner.error
+    async def banner_error(self, ctx, error):
         if isinstance(error, commands.MemberNotFound):
             embed_var = discord.Embed(
                 title=ERROR_TITLE,
