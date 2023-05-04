@@ -52,7 +52,7 @@ class Moderator(commands.Cog):
             embed_title = "Message deleted."
             await ctx.channel.purge(limit=num+1)
         else:
-            num_deleted = await ctx.channel.purge(limit=num+1)
+            num_deleted = len(await ctx.channel.purge(limit=num+1))
             embed_title = f"{num_deleted} messages deleted."
         embed_var = discord.Embed(
             title=embed_title,
@@ -78,7 +78,8 @@ class Moderator(commands.Cog):
             )
             await ctx.send(embed=embed_var)
         else:
-            await sendDefaultError(ctx)
+            # await sendDefaultError
+            print(error)
 
     ### TIMEOUT ###
     @commands.hybrid_command(description="Time out a user for a specified amount of time.",
