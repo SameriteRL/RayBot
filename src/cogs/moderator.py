@@ -42,8 +42,9 @@ class Moderator(commands.Cog):
     
     ### CLEAR ###
     @commands.command(description="Delete the last x number of messages in the channel.",
-                      aliases=["purge"], hidden=True)
-    @commands.check_any(commands.has_permissions(manage_messages=True), commands.is_owner())
+                      aliases=["purge", "erase", "delete"], hidden=True)
+    @commands.check_any(commands.has_permissions(read_message_history=True, manage_messages=True), \
+                        commands.is_owner())
     async def clear(self, ctx:Context, num:int):
         # Creates a response embed and clears messages
         if num < 1:
@@ -78,8 +79,7 @@ class Moderator(commands.Cog):
             )
             await ctx.send(embed=embed_var)
         else:
-            # await sendDefaultError
-            print(error)
+            await sendDefaultError(ctx)
 
     ### TIMEOUT ###
     @commands.hybrid_command(description="Time out a user for a specified amount of time.",
@@ -200,7 +200,7 @@ class Moderator(commands.Cog):
             embed_desc = f"Usage: `{CMD_PREFIX}timein <member>`"
         elif isinstance(error, commands.MemberNotFound):
             embed_desc = BAD_MEMBER_MSG
-
+            
         if embed_desc != None:
             embed_var = discord.Embed(
                 title=ERROR_TITLE,

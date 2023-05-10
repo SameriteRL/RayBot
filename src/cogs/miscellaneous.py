@@ -1,15 +1,14 @@
 import discord
 from discord.ext import commands
-from discord.ext.commands import Context, Bot
+from discord.ext.commands import Context
 
 import random
-import datetime as dt
 
 from src.globals import *
 
 class Miscellaneous(commands.Cog):
 
-    def __init__(self, bot:Bot):
+    def __init__(self, bot:commands.Bot):
         self.bot = bot
 
     ### PING ###
@@ -33,7 +32,7 @@ class Miscellaneous(commands.Cog):
     @commands.hybrid_command(description="Flip a coin!",
                              aliases=["flipcoin", "coin"])
     async def coinflip(self, ctx:Context):
-        # Calls a random number either 0 or 1 as heads and tails
+        # Randomly chooses either 0 or 1 as heads or tails
         result = "Heads!" if random.randint(0, 1) == 0 else "Tails!"
         # Creates and sends an embed
         embed_var = discord.Embed(
@@ -50,19 +49,43 @@ class Miscellaneous(commands.Cog):
     @commands.hybrid_command(description="Get the profile info of any user!",
                              aliases=["info", "profile"])
     async def whois(self, ctx:Context, member:discord.Member=None):
+
+        # Determines who the target of the command is based on the presence of an argument
         target_user = (await self.bot.fetch_user(member.id)) if member != None \
                        else (await self.bot.fetch_user(ctx.author.id))
-        target_name = target_user.name
-        target_id = f"{target_user.name}#{target_user.discriminator}"
-        avatar_url = target_user.display_avatar.url
+        target_member = (await ctx.guild.fetch_member(member.id)) if member != None \
+                         else (await ctx.guild.fetch_member(ctx.author.id))
+        
+        # Gets various info about the target
+        name = target_user.name
+        mention = target_user.mention
+        avatar_url = target_user.avatar.url
         banner_url = target_user.banner.url if target_user.banner != None else None
-        target_color = target_user.accent_color
+        accent_color = target_user.accent_color
+
+        # Creates and sends the profile embed
         embed_var = discord.Embed(
-            title=target_name,
-            description=target_id,
-            color=target_color
+            title=name,
+            description=mention,
+            color=accent_color
         )
         embed_var.set_thumbnail(url=avatar_url)
+        raw_time = target_user.created_at
+        creation_time = f"{raw_time.month}/{raw_time.day}/{raw_time.year} at \
+                        {raw_time.hour:02}:{raw_time.minute:02}:{raw_time.second:02}"
+        embed_var.add_field(
+            name="**Joined Discord on:**",
+            value=creation_time,
+            inline=False
+        )
+        raw_time = target_member.joined_at
+        creation_time = f"{raw_time.month}/{raw_time.day}/{raw_time.year} at \
+                        {raw_time.hour:02}:{raw_time.minute:02}:{raw_time.second:02}"
+        embed_var.add_field(
+            name=f"**Joined {ctx.guild.name} on:**",
+            value=creation_time,
+            inline=False
+        )
         if banner_url != None: embed_var.set_image(url=banner_url)
         await ctx.send(embed=embed_var)
     
@@ -134,15 +157,12 @@ class Miscellaneous(commands.Cog):
     @commands.hybrid_command(description="Check out my GitHub repository!",
                              aliases=["repository"])
     async def repo(self, ctx:Context):
-        file_var = discord.File("./icon.png", filename="icon.png")
         embed_var = discord.Embed(
             title=f"Click Here to Visit the {ctx.guild.get_member(SELF_ID).name} Repository!",
-            # description="A highly experimental Discord bot aimed for general-purpose use.",
             url='https://github.com/SameriteRL/RayBot-2',
             color=0x0099FF
         )
-        # embed_var.set_thumbnail(url="attachment://icon.png")
-        await ctx.send(file=file_var, embed=embed_var)
+        await ctx.send(embed=embed_var)
     
     @repo.error
     async def repo_error(self, ctx, error):
