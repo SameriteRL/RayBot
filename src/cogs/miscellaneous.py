@@ -1,13 +1,10 @@
+import random
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context
-
-import random
-
-from src.globals import *
+from globals import *
 
 class Miscellaneous(commands.Cog):
-
     def __init__(self, bot:commands.Bot):
         self.bot = bot
 

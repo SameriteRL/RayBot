@@ -1,11 +1,9 @@
+import math
+from decimal import Decimal
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context, Bot
-
-import math
-from decimal import Decimal
-
-from src.globals import *
+from globals import *
 
 # Handles output for most calculator functions
 async def displayAnswer(ctx:Context, answer:Decimal, equation:str, color:int=0x00C500):
@@ -38,7 +36,6 @@ async def requireTwoArgumentsError(ctx:Context, error:commands.errors, color:int
         await sendDefaultError(ctx)
 
 class Calculator(commands.Cog):
-
     def __init__(self, bot:Bot):
         self.bot = bot
     

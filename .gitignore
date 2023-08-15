@@ -1,3 +1,7 @@
 
+.vscode
+build
+dist
+*.spec
 *.pyc
 TOKEN.txt

@@ -1,13 +1,10 @@
+import datetime as dt
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context, Bot
-
-import datetime as dt
-
-from src.globals import *
+from globals import *
 
 class Moderator(commands.Cog):
-
     def __init__(self, bot:Bot):
         self.bot = bot
 
