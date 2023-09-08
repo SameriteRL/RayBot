@@ -11,8 +11,6 @@ async def main():
         cogspath=getResourcePath(R".\cogs")
     )
     await bot.vroom_vroom()
-    # gui = RayBotUI(killcmd=bot.close)
-    # gui.mainloop()
 
 if __name__ == "__main__":
     asyncio.run(main())
