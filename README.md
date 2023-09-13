@@ -11,4 +11,4 @@ A highly experimental Discord bot aimed for general-purpose use.
 > [Documentation & Getting Started](https://discordpy.readthedocs.io/en/latest/index.html "Click here to redirect!")
 
 ## Contributors
-**Raymond Chen** - SameriteRL#8629
+**Raymond Chen** - sameriterl (Discord)
