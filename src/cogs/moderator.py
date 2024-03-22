@@ -1,212 +1,180 @@
 import datetime as dt
+from datetime import timedelta, timezone
+
 import discord
 from discord.ext import commands
-from discord.ext.commands import Context, Bot
-from globals import *
+from discord.ext.commands import CommandError, Context
+
+from globals import ERROR_TITLE, BAD_MEMBER_MSG, NO_PERM_MSG, send_generic_error
+
 
 class Moderator(commands.Cog):
-    def __init__(self, bot:Bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    ### SHUTDOWN ###
-    @commands.command(description="Turns the bot offline.", aliases=["kill"], hidden=True)
-    @commands.check(commands.is_owner())
-    async def shutdown(self, ctx:Context):
-        # Creates a response embed
-        embed_var = discord.Embed(
-            title="Shutting down...",
-            color=0xC80000,
-            timestamp=dt.datetime.now()
-        )
-        if ctx.author.nick != None: invoker_name = ctx.author.nick
-        else: invoker_name = ctx.author.name
-        embed_var.set_footer(text=f"\u200bCommand initiated by {invoker_name}")
-        # Sends the embed and closes the bot
-        await ctx.send(embed=embed_var)
-        await self.bot.close()
-    
-    @shutdown.error
-    async def shutdown_error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
-            embed_var = discord.Embed(
-                title=ERROR_TITLE,
-                description=NO_PERM_MSG,
-                color=0xC80000
-            )
-            await ctx.send(embed=embed_var)
-        else:
-            await sendDefaultError(ctx)
+    async def cog_command_error(self, ctx: Context, error: CommandError) -> None:
+        if not ctx.command.has_error_handler():
+            await send_generic_error(ctx, error)
     
     ### CLEAR ###
-    @commands.command(description="Delete the last x number of messages in the channel.",
-                      aliases=["purge", "erase", "delete"], hidden=True)
-    @commands.check_any(commands.has_permissions(read_message_history=True, manage_messages=True), \
-                        commands.is_owner())
-    async def clear(self, ctx:Context, num:int):
-        # Creates a response embed and clears messages
+    @commands.command(
+        aliases = ["erase", "purge"],
+        hidden = True
+    )
+    @commands.check_any(
+        commands.has_permissions(manage_messages=True),
+        commands.is_owner()
+    )
+    async def clear(self, ctx: Context, num: int):
         if num < 1:
-            embed_title = "Enter a number greater than or equal to 1."
-        elif num == 1:
-            embed_title = "Message deleted."
-            await ctx.channel.purge(limit=num+1)
+            raise commands.BadArgument
         else:
-            num_deleted = len(await ctx.channel.purge(limit=num+1))
-            embed_title = f"{num_deleted} messages deleted."
+            try:
+                num_deleted = len(await ctx.channel.purge(limit=num+1)) - 1
+                embed_title = f"{num_deleted} messages deleted"
+            except:
+                raise
         embed_var = discord.Embed(
-            title=embed_title,
-            color=0x00FF00
+            title = embed_title,
+            color = discord.Color.green()
         )
-        # Sends the embed, which automatically deletes itself after a delay
-        await ctx.send(embed=embed_var, delete_after=DEL_DELAY)
+        await ctx.send(embed=embed_var, delete_after=3)
 
     @clear.error
-    async def clear_error(self, ctx, error):
-        embed_desc = None
+    async def clear_error(self, ctx: Context, error: CommandError):
+        embed_var = discord.Embed(
+            title = ERROR_TITLE,
+            color = discord.Color.red()
+        )
         if isinstance(error, commands.CheckFailure):
-            embed_desc = NO_PERM_MSG
+            embed_var.description = NO_PERM_MSG
         elif isinstance(error, commands.MissingRequiredArgument):
-            embed_desc = f"Usage: `{CMD_PREFIX}clear [number of messages]`"
+            embed_var.title = "Incorrect usage"
+            embed_var.description = f"Usage: `{self.bot.command_prefix}clear <num messages>`"
         elif isinstance(error, commands.BadArgument):
-            embed_desc = "Enter a valid integer."
-        if embed_desc != None:
-            embed_var = discord.Embed(
-                title=ERROR_TITLE,
-                description=embed_desc,
-                color=0xC80000
-            )
+            embed_var.description = "Enter a valid integer."
+        if embed_var.description is not None:
             await ctx.send(embed=embed_var)
         else:
-            await sendDefaultError(ctx)
+            await send_generic_error(ctx, error)
 
     ### TIMEOUT ###
-    @commands.hybrid_command(description="Time out a user for a specified amount of time.",
-                             aliases=["mute", "silence"], hidden=True)
-    @commands.check_any(commands.has_permissions(moderate_members=True), commands.is_owner())
-    async def timeout(self, ctx:Context, member:discord.Member, *, time:str=""):
-
-        # Guards against an empty argument
+    @commands.command(
+        description = "Time out a user for a specified amount of time.",
+        aliases = ["mute", "silence"],
+        hidden = True
+    )
+    @commands.check_any(
+        commands.has_permissions(moderate_members=True),
+        commands.is_owner()
+    )
+    async def timeout(self, ctx: Context, member: discord.Member, *, time: str = ""):
         if len(time) == 0:
-            raise commands.MissingRequiredArgument
-        
+            raise commands.BadArgument
         time = time.strip().split()
-        days, hours, minutes, seconds = 0, 0, 0, 0
+        days, hrs, mins, secs = 0, 0, 0, 0
         for element in time:
-            try: int(element[:-1])
-            except: raise commands.BadArgument
-            else:
-                if element.lower().endswith("d"): days += int(element[:-1])
-                elif element.lower().endswith("h"): hours += int(element[:-1])
-                elif element.lower().endswith("m"): minutes += int(element[:-1])
-                elif element.lower().endswith("s"): seconds += int(element[:-1])
-                else: raise commands.BadArgument
-        
-        # Corrects any overflowing time components
-        if seconds >= 60:
-            minutes += seconds // 60
-            seconds %= 60
-        if minutes >= 60:
-            hours += minutes // 60
-            minutes %= 60
-        if hours >= 24:
-            days += hours // 24
-            hours %= 24
-
+            try:
+                if element.lower().endswith("d"):
+                    days += int(element[:-1])
+                elif element.lower().endswith("h"):
+                    hrs += int(element[:-1])
+                elif element.lower().endswith("m"):
+                    mins += int(element[:-1])
+                elif element.lower().endswith("s"):
+                    secs += int(element[:-1])
+                else:
+                    raise
+            except:
+                raise commands.BadArgument
+        td = timedelta(days=days, hours=hrs, minutes=mins, seconds=secs)
+        embed_var = discord.Embed(color=discord.Color.red())
         error_desc = None
-        # Checks that the user is not already timed out
         if member.is_timed_out():
             error_desc = "This user is already timed out."
         # Maximum possible timeout is 28 days (2,419,200 seconds)
-        elif days * 86400 + hours * 3600 + minutes * 60 + seconds > 2419200:
-            error_desc = "The maximum possible timeout duration is 28 days."
-        # Outputs an error if either of the above conditions are true
-        if error_desc != None:
-            embed_var = discord.Embed(
-                title=ERROR_TITLE,
-                description=error_desc,
-                color=0xC80000
-            )
+        elif int(td.total_seconds()) >= 2419200:
+            error_desc = "The maximum possible timeout duration is just under 28 days."
+        if error_desc is not None:
+            embed_var.title = ERROR_TITLE
+            embed_var.description = error_desc
             await ctx.send(embed=embed_var)
             return
-        
-        # Executes timeout
-        await member.timeout(dt.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds))
-        embed_var = discord.Embed(
-            title=f"{member.name} has been timed out.",
-            description=f"Duration: {days}D {hours}H {minutes}M {seconds}S",
-            color=0xC80000
-        )
+        await member.timeout(td)
+        days = td.days
+        hrs = int(td / timedelta(hours=1)) % 24
+        mins = int(td / timedelta(minutes=1)) % 60
+        secs = int(td / timedelta(seconds=1)) % 60
+        embed_var.title = f"{member.name} has been timed out"
+        embed_var.description = f"Duration: `{days}D {hrs}H {mins}M {secs}S`"
         await ctx.send(embed=embed_var)
     
     @timeout.error
-    async def timeout_error(self, ctx, error):
-        embed_desc = None
+    async def timeout_error(self, ctx: Context, error: CommandError):
+        embed_var = discord.Embed(
+            title = ERROR_TITLE,
+            color = discord.Color.red()
+        )
         if isinstance(error, commands.CheckFailure):
-            embed_desc = NO_PERM_MSG
+            embed_var.description = NO_PERM_MSG
         elif isinstance(error, commands.MemberNotFound):
-            embed_desc = BAD_MEMBER_MSG
-        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
-            embed_desc = f"Usage: `{CMD_PREFIX}timeout <member> <days>d <hours>h <minutes>m <seconds>s`\n \
-                           At least one time argument is required."
-        if embed_desc != None:
-            embed_var = discord.Embed(
-                title=ERROR_TITLE,
-                description=embed_desc,
-                color=0xC80000
-            )
+            embed_var.description = BAD_MEMBER_MSG
+        elif isinstance(error, commands.BadArgument) or \
+             isinstance(error, commands.MissingRequiredArgument):
+            embed_var.title = "Incorrect usage"
+            embed_var.description = f"Usage: `{self.bot.command_prefix}timeout " \
+                                    + "<member> <days>d <hours>h <minutes>m <seconds>s`" \
+                                    + "\nAt least one time field is required."
+        if embed_var.description is not None:
             await ctx.send(embed=embed_var)
         else:
-            await sendDefaultError(ctx)
+            await send_generic_error(ctx, error)
 
     ### TIMEIN ###
-    @commands.hybrid_command(description="Remove timeout from a user.",
-                             aliases=["untimeout"], hidden=True)
-    @commands.check_any(commands.has_permissions(moderate_members=True), commands.is_owner())
-    async def timein(self, ctx:Context, member:discord.Member):
-        if member.is_timed_out():
-            remaining_seconds = (member.timed_out_until - dt.datetime.now(dt.timezone.utc)).seconds
-            days, hours, minutes, seconds = 0, 0, 0, remaining_seconds
-            # Organizes the total seconds into different time components
-            if seconds >= 60:
-                minutes += seconds // 60
-                seconds %= 60
-            if minutes >= 60:
-                hours += minutes // 60
-                minutes %= 60
-            if hours >= 24:
-                days += hours // 24
-                hours %= 24
-            await member.timeout(dt.timedelta(seconds=0))
-            embed_var = discord.Embed(
-                title=f"Removed timeout from {member.name}.",
-                description=f"Remaining duration: {days}D {hours}H {minutes}M {seconds}S",
-                color=0x00FF00
-            )
-        else:
-            embed_var = discord.Embed(
-                title=f"{member.name} is not timed out.",
-                color=0x00FF00
-            )
+    @commands.command(
+        description = "Remove timeout from a user.",
+        aliases = ["untimeout"],
+        hidden = True
+    )
+    @commands.check_any(
+        commands.has_permissions(moderate_members=True),
+        commands.is_owner()
+    )
+    async def timein(self, ctx: Context, member: discord.Member):
+        embed_var = discord.Embed(color=discord.Color.green())
+        if not member.is_timed_out():
+            embed_var.title = f"{member.name} is not timed out"
+            await ctx.send(embed=embed_var)
+            return
+        remaining_secs = (member.timed_out_until - dt.datetime.now(timezone.utc)) \
+                          .total_seconds()
+        td = timedelta(seconds=remaining_secs)
+        days = td.days
+        hrs = int(td / timedelta(hours=1)) % 24
+        mins = int(td / timedelta(minutes=1)) % 60
+        secs = int(td / timedelta(seconds=1)) % 60
+        await member.timeout(timedelta(seconds=0))
+        embed_var.title = f"Removed timeout from {member.name}"
+        embed_var.description = f"Remaining duration: `{days}D {hrs}H {mins}M {secs}S`"
         await ctx.send(embed=embed_var)
     
     @timein.error
-    async def timein_error(self, ctx, error):
-        embed_desc = None
+    async def timein_error(self, ctx: Context, error: CommandError):
+        embed_var = discord.Embed(
+            title = ERROR_TITLE,
+            color = discord.Color.red()
+        )
         if isinstance(error, commands.CheckFailure):
-            embed_desc = NO_PERM_MSG
+            embed_var.description = NO_PERM_MSG
         elif isinstance(error, commands.MissingRequiredArgument):
-            embed_desc = f"Usage: `{CMD_PREFIX}timein <member>`"
+            embed_var.title = "Incorrect usage"
+            embed_var.description = f"Usage: `{self.bot.command_prefix}timein <member>`"
         elif isinstance(error, commands.MemberNotFound):
-            embed_desc = BAD_MEMBER_MSG
-            
-        if embed_desc != None:
-            embed_var = discord.Embed(
-                title=ERROR_TITLE,
-                description=embed_desc,
-                color=0xC80000
-            )
+            embed_var.description = BAD_MEMBER_MSG
+        if embed_var.description is not None:
             await ctx.send(embed=embed_var)
         else:
-            await ctx.send(str(error))
+            await send_generic_error(ctx, error)
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Moderator(bot))

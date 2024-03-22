@@ -1,40 +1,31 @@
-import os
-import sys
+import logging
+
 import discord
-from discord.ext.commands import Context
+from discord import Interaction
+from discord.ext.commands import CommandError, Context
 
-# Prefix for all bot commands
-CMD_PREFIX = "?"
 
-# The bot's user ID
-SELF_ID = 980203562485317652
-
-# For use in commands that check for owner status
-OWNER_IDS = {230003732836909056} # Raymond
-
-# For use in temporary messages
-DEL_DELAY = 3
-
-# For use in error handlers
-ERROR_TITLE = "Something went wrong."
-NO_PERM_MSG = "You don't have permissions to do that."
-BAD_MEMBER_MSG = "Member not found. Nicknames and usernames are case sensitive, or maybe you spelled it wrong?"
-
-# When running a one-file build, any resource files used by the program are unpacked
-# into a temp directory referenced by sys._MEIPASS. This function is necessary to
-# translate paths used during development into paths usable by the build.
-def getResourcePath(rel_path:str) -> str:
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        return rel_path
-    return os.path.join(base_path, rel_path)
-
-async def sendDefaultError(ctx:Context):
+async def send_generic_error(ctx: Context | Interaction, error: CommandError = None) -> None:
+    """
+    Standard error message for any unhandled or unexpected command errors.
+    """
     embed_var = discord.Embed(
-        title=ERROR_TITLE,
-        description="Unknown error. Contact an admin for more details.",
-        color=0xC80000
+        title = ERROR_TITLE,
+        description = "Unknown error. This is probably the dev's fault, sorry!",
+        color = discord.Color.red()
     )
-    embed_var.set_footer(text=f"\u200bCommand attempted by {ctx.author.name}#{ctx.author.discriminator}")
-    await ctx.send(embed=embed_var)
+    if isinstance(ctx, Context):
+        await ctx.send(embed=embed_var)
+    else:
+        await ctx.response.send_message(embed=embed_var)
+    if error is not None:
+        logging.error(
+            msg = f'Error from command "{ctx.command}" in extension'
+                  + f'"{ctx.cog.qualified_name}"',
+            exc_info = True
+        )
+
+ERROR_TITLE = "Something went wrong"
+NO_PERM_MSG = "You don't have permissions to do that."
+BAD_MEMBER_MSG = "Member not found. Nicknames and usernames are case sensitive, or" \
+                 + "maybe you spelled it wrong?"
