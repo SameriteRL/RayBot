@@ -10,8 +10,11 @@ from globals import ERROR_TITLE, NO_PERM_MSG, send_generic_error
 class DeveloperFunctions(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    def cog_check(self, ctx: Context) -> bool:
+        return ctx.author.id in self.bot.owner_ids
     
-    async def cog_command_error(self, ctx: Context, error: CommandError) -> None:
+    async def cog_command_error(self, ctx: Context, error: CommandError):
         if not ctx.command.has_error_handler():
             await send_generic_error(ctx, error)
         elif isinstance(error, commands.CheckFailure):
@@ -30,7 +33,6 @@ class DeveloperFunctions(commands.Cog):
         aliases = ["stop", "kill"],
         hidden = True
     )
-    @commands.check(commands.is_owner())
     async def shutdown(self, ctx: Context):
         embed_var = discord.Embed(
             title = "Shutting down...",
@@ -44,7 +46,6 @@ class DeveloperFunctions(commands.Cog):
         name = "reload",
         hidden = True
     )
-    @commands.check(commands.is_owner())
     async def reload(self, ctx: Context):
         logging.info("Reloading cogs")
         cogs_status = await self.bot.load_cogs()
@@ -72,7 +73,6 @@ class DeveloperFunctions(commands.Cog):
         name = "sync",
         hidden = True
     )
-    @commands.check(commands.is_owner())
     async def sync(self, ctx: Context):
         logging.info("Syncing application commands")
         embed_var = discord.Embed(

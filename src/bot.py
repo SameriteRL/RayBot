@@ -5,6 +5,7 @@ import signal
 from pathlib import Path
 from typing import Tuple
 
+import discord
 from discord.ext import commands
 from discord.ext.commands import CommandError, Context
 
@@ -30,6 +31,13 @@ class RayBot(commands.Bot):
             logging.info(f"Deployed in {len(self.guilds)} guild(s):")
             for guild in self.guilds:
                 logging.info(f"\t{guild.name}")
+        await self.change_presence(
+            activity = discord.Streaming(
+                name = "a cool video",
+                # Fish spinning video
+                url = "https://www.youtube.com/watch?v=RHuQqLxmEyg"
+            )
+        )
 
     async def close(self) -> None:
         """
